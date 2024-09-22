@@ -72,7 +72,7 @@ public:
         // Write to ppm file
         time_count.start("write_to_ppm");
 
-        FILE *fp = fopen("image.ppm", "wb");
+        FILE *fp = fopen("result.ppm", "wb");
         (void)fprintf(fp, "P6\n%d %d\n255\n", image_width, image_height);
         for (auto i = 0; i < image_height * image_width; ++i)
         {
