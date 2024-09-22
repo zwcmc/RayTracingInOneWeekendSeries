@@ -1,0 +1,3 @@
+/Users/czw/Desktop/RayTracingInOneWeekendSeries/RayTracingTheNextWeek/build/CMakeFiles/RayTracingTheNextWeek.dir
+/Users/czw/Desktop/RayTracingInOneWeekendSeries/RayTracingTheNextWeek/build/CMakeFiles/edit_cache.dir
+/Users/czw/Desktop/RayTracingInOneWeekendSeries/RayTracingTheNextWeek/build/CMakeFiles/rebuild_cache.dir
