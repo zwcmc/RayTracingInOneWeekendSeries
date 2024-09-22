@@ -14,8 +14,13 @@ inline double linear_to_gamma(double linear_component)
     return 0;
 }
 
-void write_color(std::ostream& out, const color& pixel_color)
+void write_color(FILE *fp, const color &pixel_color)
 {
+    if (fp == nullptr)
+        return;
+
+    static unsigned char color[3];
+
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
@@ -31,8 +36,11 @@ void write_color(std::ostream& out, const color& pixel_color)
     int gbyte = int(256 * intensity.clamp(g));
     int bbyte = int(256 * intensity.clamp(b));
 
-    // Write out the pixel color components.
-    out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
+    color[0] = (unsigned char)rbyte;
+    color[1] = (unsigned char)gbyte;
+    color[2] = (unsigned char)bbyte;
+
+    fwrite(color, 1, 3, fp);
 }
 
 #endif

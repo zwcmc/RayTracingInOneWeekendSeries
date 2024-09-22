@@ -4,6 +4,15 @@
 #include "hittable.h"
 #include "material.h"
 
+#include "timer.h"
+
+#include <fstream>
+
+#include <thread>
+#include <mutex>
+std::mutex mtx;
+int progress = 0;
+
 class camera
 {
 public:
@@ -24,24 +33,54 @@ public:
     {
         initialize();
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+        timer time_count;
 
-        for (int j = 0; j < image_height; j++)
+        // Rendering
+        time_count.start("camera_rendering");
+
+        std::vector<color> framebuffer(image_width * image_height);
+
+        int num_threads = (int)std::thread::hardware_concurrency();
+        std::thread th[num_threads];
+        int thread_height = image_height / num_threads;
+        auto renderRows = [&](uint32_t start_height, uint32_t end_height)
         {
-            std::clog << "\rScanlines remaining: " << (image_height - j) << ' ' << std::flush;
-            for (int i = 0; i < image_width; i++)
+            for (uint32_t j = start_height; j < end_height; ++j)
             {
-                color pixel_color(0, 0, 0);
-                for (int sample = 0; sample < samples_per_pixel; sample++)
+                for (int i = 0; i < image_width; ++i)
                 {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
+                    framebuffer[(int)(j * image_width + i)] = color(0, 0, 0);
+                    for (int sample = 0; sample < samples_per_pixel; ++sample)
+                    {
+                        ray r = get_ray(i, j);
+                        framebuffer[(int)(j * image_width + i)] += ray_color(r, max_depth, world) * pixel_samples_scale;
+                    }
                 }
-                write_color(std::cout, pixel_samples_scale * pixel_color);
             }
+        };
+        for (int t = 0; t < num_threads; ++t)
+        {
+            th[t] = std::thread(renderRows, t * thread_height, (t + 1) * thread_height);
+        }
+        for (int t = 0; t < num_threads; ++t)
+        {
+            th[t].join();
         }
 
-        std::clog << "\rDone.                 \n";
+        time_count.stop();
+
+        // Write to ppm file
+        time_count.start("write_to_ppm");
+
+        FILE *fp = fopen("image.ppm", "wb");
+        (void)fprintf(fp, "P6\n%d %d\n255\n", image_width, image_height);
+        for (auto i = 0; i < image_height * image_width; ++i)
+        {
+            write_color(fp, framebuffer[i]);
+        }
+        fclose(fp);
+
+        time_count.stop();
     }
 
     private : int image_height; // Rendered image height

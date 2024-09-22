@@ -6,8 +6,6 @@
 #include "material.h"
 #include "sphere.h"
 
-#include "timer.h"
-
 int main()
 {
     hittable_list world;
@@ -39,12 +37,7 @@ int main()
     cam.defocus_angle = 10.0;
     cam.focus_dist = 3.4;
 
-    timer time_count;
-    time_count.start("camera_rendering");
-
     cam.render(world);
-
-    time_count.stop();
 
     return 0;
 }
